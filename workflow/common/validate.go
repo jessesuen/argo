@@ -109,12 +109,15 @@ func (ctx *wfValidationCtx) validateTemplate(tmpl *wfv1.Template, args wfv1.Argu
 	if tmpl.Script != nil {
 		tmplTypes++
 	}
+	if tmpl.Resource != nil {
+		tmplTypes++
+	}
 	switch tmplTypes {
 	case 0:
-		return errors.New(errors.CodeBadRequest, "template type unspecified. choose one of: container, steps, script")
+		return errors.New(errors.CodeBadRequest, "template type unspecified. choose one of: container, steps, script, resource")
 	case 1:
 	default:
-		return errors.New(errors.CodeBadRequest, "multiple template types specified. choose one of: container, steps, script")
+		return errors.New(errors.CodeBadRequest, "multiple template types specified. choose one of: container, steps, script, resource")
 	}
 	if tmpl.Steps == nil {
 		err = validateLeaf(scope, tmpl)

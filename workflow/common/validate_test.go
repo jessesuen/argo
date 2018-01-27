@@ -677,3 +677,30 @@ func TestValidActiveDeadlineSeconds(t *testing.T) {
 		assert.Contains(t, err.Error(), "activeDeadlineSeconds must be a positive integer > 0")
 	}
 }
+
+var resourcesParams = `
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: resource-param-
+spec:
+  arguments:
+    parameters:
+    - name: nrcpu
+      value: 4
+  entrypoint: resource-param
+  templates:
+  - name: resource-param
+    container:
+      image: alpine:latest
+      cmd: [sh, -c, hello world]
+      resources:
+        requests:
+          memory: 1Gi
+          cpu: "{{inputs.parameters.nrcpu}}"
+`
+
+func TestResourcesParam(t *testing.T) {
+	err := validate(resourcesParams)
+	assert.Nil(t, err)
+}

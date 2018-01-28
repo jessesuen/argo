@@ -21,6 +21,12 @@ required = [
   name = "k8s.io/code-generator"
   branch = "release-1.9"
 
+# workaround inability to support nested lists
+[[constraint]]
+  name = "k8s.io/kube-openapi"
+  branch = "nested-lists"
+  source = "https://github.com/jessesuen/kube-openapi.git"
+
 [[constraint]]
   name = "k8s.io/client-go"
   branch = "release-6.0"

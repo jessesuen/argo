@@ -32,11 +32,11 @@ const (
 	NodeError     NodePhase = "Error"
 )
 
+// Workflow is the definition of our CRD Workflow class
 // +genclient
 // +genclient:noStatus
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// Workflow is the definition of our CRD Workflow class
+// +k8s:openapi-gen=true
 type Workflow struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
@@ -44,9 +44,9 @@ type Workflow struct {
 	Status            WorkflowStatus `json:"status"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 // WorkflowList is list of Workflow resources
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
 type WorkflowList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
@@ -54,6 +54,7 @@ type WorkflowList struct {
 }
 
 // WorkflowSpec is the specification of a Workflow.
+// +k8s:openapi-gen=true
 type WorkflowSpec struct {
 	// Templates is a list of workflow templates used in a workflow
 	Templates []Template `json:"templates"`
@@ -98,9 +99,9 @@ type WorkflowSpec struct {
 	OnExit string `json:"onExit,omitempty"`
 }
 
-// +k8s:deepcopy-gen
-
 // Template is a reusable and composable unit of execution in a workflow
+// +k8s:deepcopy-gen:
+// +k8s:openapi-gen=true
 type Template struct {
 	Name    string  `json:"name"`
 	Inputs  Inputs  `json:"inputs,omitempty"`
@@ -147,12 +148,14 @@ type Template struct {
 }
 
 // Inputs are the mechanism for passing parameters, artifacts, volumes from one template to another
+// +k8s:openapi-gen=true
 type Inputs struct {
 	Parameters []Parameter `json:"parameters,omitempty"`
 	Artifacts  []Artifact  `json:"artifacts,omitempty"`
 }
 
 // Parameter indicate a passed string parameter to a service template with an optional default value
+// +k8s:openapi-gen=true
 type Parameter struct {
 	// Name is the parameter name
 	Name string `json:"name"`
@@ -169,6 +172,7 @@ type Parameter struct {
 }
 
 // ValueFrom describes a location in which to obtain the value to a parameter
+// +k8s:openapi-gen=true
 type ValueFrom struct {
 	// Path in the container to retrieve an output parameter value from in container templates
 	Path string `json:"path,omitempty"`
@@ -185,6 +189,7 @@ type ValueFrom struct {
 }
 
 // Artifact indicates an artifact to place at a specified path
+// +k8s:openapi-gen=true
 type Artifact struct {
 	// name of the artifact. must be unique within a template's inputs/outputs.
 	Name string `json:"name"`
@@ -207,6 +212,7 @@ type Artifact struct {
 // It is used as single artifact in the context of inputs/outputs (e.g. outputs.artifacts.artname).
 // It is also used to describe the location of multiple artifacts such as the archive location
 // of a single workflow step, which the executor will use as a default location to store its files.
+// +k8s:openapi-gen=true
 type ArtifactLocation struct {
 	S3          *S3Artifact          `json:"s3,omitempty"`
 	Git         *GitArtifact         `json:"git,omitempty"`
@@ -216,6 +222,7 @@ type ArtifactLocation struct {
 }
 
 // Outputs hold parameters, artifacts, and results from a step
+// +k8s:openapi-gen=true
 type Outputs struct {
 	// Parameters holds the list of output parameters produced by a step
 	Parameters []Parameter `json:"parameters,omitempty"`
@@ -241,12 +248,14 @@ type WorkflowStep struct {
 type Item interface{}
 
 // Arguments to a template
+// +k8s:openapi-gen=true
 type Arguments struct {
 	Parameters []Parameter `json:"parameters,omitempty"`
 	Artifacts  []Artifact  `json:"artifacts,omitempty"`
 }
 
 // Sidecar is a container which runs alongside the main container
+// +k8s:openapi-gen=true
 type Sidecar struct {
 	apiv1.Container `json:",inline"`
 
@@ -255,6 +264,7 @@ type Sidecar struct {
 
 // SidecarOptions provide a way to customize the behavior of a sidecar and how it
 // affects the main container.
+// +k8s:openapi-gen=true
 type SidecarOptions struct {
 
 	// MirrorVolumeMounts will mount the same volumes specified in the main container
@@ -300,6 +310,8 @@ func (wfs *WorkflowStatus) GetNodesWithRetries() []NodeStatus {
 	return nodesWithRetries
 }
 
+// RetryStrategy provides controls on how to retry a workflow step
+// +k8s:openapi-gen=true
 type RetryStrategy struct {
 	Limit *int32 `json:"limit,omitempty"`
 }

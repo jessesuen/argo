@@ -433,6 +433,7 @@ func archivePath(containerID string, sourcePath string, destPath string) error {
 	log.Infof("Archiving %s:%s to %s", containerID, sourcePath, destPath)
 	dockerCpCmd := fmt.Sprintf("docker cp -a %s:%s - | gzip > %s", containerID, sourcePath, destPath)
 	err := common.RunCommand("sh", "-c", dockerCpCmd)
+	log.Infof("Command completed. Err: %+v", err)
 	if err != nil {
 		return err
 	}

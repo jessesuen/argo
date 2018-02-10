@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/argoproj/argo/errors"
+	"github.com/argoproj/argo/pkg/apis/workflow"
 	wfv1 "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	"github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 	log "github.com/sirupsen/logrus"
@@ -417,4 +419,98 @@ func ResumeWorkflow(wfIf v1alpha1.WorkflowInterface, workflowName string) error 
 		return err
 	}
 	return nil
+}
+
+const letters = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+func randString(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+// GenerateResubmitWorkflow generates a new workflow from a failed/errored workflow which will reuse successful nodes
+func GenerateResubmitWorkflow(wf *wfv1.Workflow) (*wfv1.Workflow, error) {
+	switch wf.Status.Phase {
+	case wfv1.NodeFailed, wfv1.NodeError:
+	default:
+		return nil, errors.Errorf(errors.CodeBadRequest, "workflow must be Failed/Error to resubmit")
+	}
+	newWF := wfv1.Workflow{}
+	newWF.TypeMeta = wf.TypeMeta
+
+	// when resubmitting workflow, we need to use a predetermined workflow name in order to
+	// formulate the node statuses. The following simulates the behavior of generateName
+	newWF.ObjectMeta.GenerateName = wf.ObjectMeta.GenerateName
+	if wf.ObjectMeta.GenerateName != "" {
+		newWF.ObjectMeta.Name = wf.ObjectMeta.GenerateName + randString(5)
+	} else {
+		newWF.ObjectMeta.Name = wf.ObjectMeta.Name + "-" + randString(5)
+		newWF.ObjectMeta.GenerateName = wf.ObjectMeta.Name + "-"
+	}
+
+	// carry over user labels and annotations from previous workflow.
+	// skip argo labels except for the controller instanceID label.
+	for key, val := range wf.ObjectMeta.Labels {
+		if strings.HasPrefix(key, workflow.FullName+"/") && key != LabelKeyControllerInstanceID {
+			continue
+		}
+		if newWF.ObjectMeta.Labels == nil {
+			newWF.ObjectMeta.Labels = make(map[string]string)
+		}
+		newWF.ObjectMeta.Labels[key] = val
+	}
+	for key, val := range wf.ObjectMeta.Annotations {
+		if newWF.ObjectMeta.Annotations == nil {
+			newWF.ObjectMeta.Annotations = make(map[string]string)
+		}
+		newWF.ObjectMeta.Annotations[key] = val
+	}
+
+	// Iterate the previous nodes. If it was successful Pod carry it forward
+	replaceRegexp := regexp.MustCompile("^" + wf.ObjectMeta.Name)
+	newWF.Spec = wf.Spec
+	newWF.Status.Nodes = make(map[string]wfv1.NodeStatus)
+	for _, node := range wf.Status.Nodes {
+		switch node.Phase {
+		case wfv1.NodeSucceeded, wfv1.NodeSkipped:
+			originalID := node.ID
+			node.Name = replaceRegexp.ReplaceAllString(node.Name, newWF.ObjectMeta.Name)
+			node.ID = newWF.NodeID(node.Name)
+			node.BoundaryID = convertNodeID(&newWF, replaceRegexp, node.BoundaryID, wf.Status.Nodes)
+			newChildren := make([]string, len(node.Children))
+			for i, child := range node.Children {
+				newChildren[i] = convertNodeID(&newWF, replaceRegexp, child, wf.Status.Nodes)
+			}
+			node.Children = newChildren
+			if node.Type == wfv1.NodeTypePod {
+				node.Phase = wfv1.NodeSkipped
+				node.Type = wfv1.NodeTypeSkipped
+				node.Message = fmt.Sprintf("original pod: %s", originalID)
+				//node.StartedAt = metav1.Time{Time: time.Now().UTC()}
+				//node.FinishedAt = node.StartedAt
+			}
+			newWF.Status.Nodes[node.ID] = node
+		case wfv1.NodeError, wfv1.NodeFailed, wfv1.NodeRunning:
+			// do not add this status to the node. pretend as if this node never existed.
+			// NOTE: NodeRunning shouldn't really happen except in weird scenarios where controller
+			// mismanages state (e.g. panic when operating on a workflow)
+		default:
+			return nil, errors.InternalErrorf("Workflow cannot be resubmitted with nodes in %s phase", node, node.Phase)
+		}
+	}
+	return &newWF, nil
+}
+
+// convertNodeID converts an old nodeID to a new nodeID
+func convertNodeID(newWf *wfv1.Workflow, regex *regexp.Regexp, oldNodeID string, oldNodes map[string]wfv1.NodeStatus) string {
+	node := oldNodes[oldNodeID]
+	newNodeName := regex.ReplaceAllString(node.Name, newWf.ObjectMeta.Name)
+	return newWf.NodeID(newNodeName)
 }

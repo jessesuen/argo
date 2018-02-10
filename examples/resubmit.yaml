@@ -1,0 +1,46 @@
+# This example demonstrates resubmitting a failed workflow.
+# Submit this workflow, which will very likely fail. When it does resubmit the failed workflow using:
+# argo resubmit WORKFLOWNAME
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: resubmit-
+spec:
+  entrypoint: diamond
+  templates:
+  - name: diamond
+    dag:
+      tasks:
+      - name: A
+        template: random-fail
+      - name: B
+        dependencies: [A]
+        template: random-fail
+      - name: C
+        dependencies: [A]
+        template: random-fail
+      - name: D
+        dependencies: [B, C]
+        template: resubmit
+
+  - name: resubmit
+    steps:
+    - - name: randfail1a
+        template: random-fail
+      - name: randfail1b
+        template: random-fail
+    - - name: randfail2a
+        template: random-fail
+      - name: randfail2b
+        template: random-fail
+      - name: randfail2c
+        template: random-fail
+      - name: randfail2d
+        template: random-fail
+
+  # will fail with a 50% probability
+  - name: random-fail
+    container:
+      image: python:3.6
+      command: ["python", -c]
+      args: ["import random; import sys; exit_code = random.randint(0, 1); print('exiting with code {}'.format(exit_code)); sys.exit(exit_code)"]

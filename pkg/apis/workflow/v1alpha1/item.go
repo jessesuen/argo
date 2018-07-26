@@ -23,11 +23,11 @@ const (
 // +protobuf.options.(gogoproto.goproto_stringer)=false
 // +k8s:openapi-gen=true
 type Item struct {
-	Type    Type                 `protobuf:"bytes,1,opt,name=type,casttype=Type"`
-	NumVal  json.Number          `protobuf:"bytes,2,opt,name=numVal"`
-	BoolVal bool                 `protobuf:"bytes,3,opt,name=boolVal"`
-	StrVal  string               `protobuf:"bytes,4,opt,name=strVal"`
-	MapVal  map[string]ItemValue `protobuf:"bytes,5,opt,name=mapVal"`
+	Type    Type                 `json:"type,omitempty" protobuf:"bytes,1,opt,name=type,casttype=Type"`
+	NumVal  json.Number          `json:"numVal,omitempty" protobuf:"bytes,2,opt,name=numVal"`
+	BoolVal bool                 `json:"boolVal,omitempty" protobuf:"bytes,3,opt,name=boolVal"`
+	StrVal  string               `json:"strVal,omitempty" protobuf:"bytes,4,opt,name=strVal"`
+	MapVal  map[string]ItemValue `json:"mapVal,omitempty" protobuf:"bytes,5,opt,name=mapVal"`
 }
 
 // UnmarshalJSON implements the json.Unmarshaller interface.
@@ -85,10 +85,10 @@ func (i Item) MarshalJSON() ([]byte, error) {
 // +protobuf.options.(gogoproto.goproto_stringer)=false
 // +k8s:openapi-gen=true
 type ItemValue struct {
-	Type    Type        `protobuf:"varint,1,opt,name=type,casttype=Type"`
-	NumVal  json.Number `protobuf:"bytes,2,opt,name=numVal"`
-	BoolVal bool        `protobuf:"bytes,3,opt,name=boolVal"`
-	StrVal  string      `protobuf:"bytes,4,opt,name=strVal"`
+	Type    Type        `json:"type,omitempty" protobuf:"varint,1,opt,name=type,casttype=Type"`
+	NumVal  json.Number `json:"numVal,omitempty" protobuf:"bytes,2,opt,name=numVal"`
+	BoolVal bool        `json:"boolVal,omitempty" protobuf:"bytes,3,opt,name=boolVal"`
+	StrVal  string      `json:"strVal,omitempty" protobuf:"bytes,4,opt,name=strVal"`
 }
 
 // UnmarshalJSON implements the json.Unmarshaller interface.

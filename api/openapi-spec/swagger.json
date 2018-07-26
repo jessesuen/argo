@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "Argo",
-    "version": "v2.1.1"
+    "version": "v2.2.0"
   },
   "paths": {},
   "definitions": {
@@ -236,53 +236,40 @@
     },
     "io.argoproj.workflow.v1alpha1.Item": {
       "description": "Item expands a single workflow step into multiple parallel steps The value of Item can be a map, string, bool, or number",
-      "required": [
-        "Type",
-        "NumVal",
-        "BoolVal",
-        "StrVal",
-        "MapVal"
-      ],
       "properties": {
-        "BoolVal": {
+        "boolVal": {
           "type": "boolean"
         },
-        "MapVal": {
+        "mapVal": {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/io.argoproj.workflow.v1alpha1.ItemValue"
           }
         },
-        "NumVal": {
+        "numVal": {
           "type": "string"
         },
-        "StrVal": {
+        "strVal": {
           "type": "string"
         },
-        "Type": {
+        "type": {
           "type": "integer",
           "format": "int32"
         }
       }
     },
     "io.argoproj.workflow.v1alpha1.ItemValue": {
-      "required": [
-        "Type",
-        "NumVal",
-        "BoolVal",
-        "StrVal"
-      ],
       "properties": {
-        "BoolVal": {
+        "boolVal": {
           "type": "boolean"
         },
-        "NumVal": {
+        "numVal": {
           "type": "string"
         },
-        "StrVal": {
+        "strVal": {
           "type": "string"
         },
-        "Type": {
+        "type": {
           "type": "integer",
           "format": "int32"
         }

@@ -1002,7 +1002,8 @@ func TestValidWithItems(t *testing.T) {
 	err := validate(validWithItems)
 	assert.Nil(t, err)
 
-	err = validate(invalidWithItems)
+	var wf wfv1.Workflow
+	err = yaml.Unmarshal([]byte(invalidWithItems), &wf)
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "withItems")
 	}

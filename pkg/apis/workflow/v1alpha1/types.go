@@ -651,7 +651,7 @@ func (tmpl *Template) IsLeaf() bool {
 // DAGTemplate is a template subtype for directed acyclic graph templates
 type DAGTemplate struct {
 	// Target are one or more names of targets to execute in a DAG
-	Targets string `json:"target,omitempty"`
+	Target string `json:"target,omitempty"`
 
 	// Tasks are a list of DAG tasks
 	Tasks []DAGTask `json:"tasks"`

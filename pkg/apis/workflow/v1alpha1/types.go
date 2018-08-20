@@ -265,6 +265,26 @@ type Artifact struct {
 	// GlobalName exports an output artifact to the global scope, making it available as
 	// '{{workflow.outputs.artifacts.XXXX}} and in workflow.status.outputs.artifacts
 	GlobalName string `json:"globalName,omitempty"`
+
+	// Archive controls how the artifact will be saved to the artifact repository.
+	Archive *ArchiveStrategy `json:"archive,omitempty"`
+}
+
+type ArchiveStrategy struct {
+	Tar  *TarStrategy  `json:"tar,omitempty"`
+	None *NoneStrategy `json:"none,omitempty"`
+}
+
+type TarStrategy struct {
+	// Possible values are: tar.gz (default) or none. If none, the artifact will not be tarballed
+	// before saving. Note that if the artifact is a directory, the artifact driver must support
+	// the ability to save/load the directory appropriately.
+}
+
+type NoneStrategy struct {
+	// Possible values are: tar.gz (default) or none. If none, the artifact will not be tarballed
+	// before saving. Note that if the artifact is a directory, the artifact driver must support
+	// the ability to save/load the directory appropriately.
 }
 
 // ArtifactLocation describes a location for a single or multiple artifacts.

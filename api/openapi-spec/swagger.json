@@ -6,6 +6,16 @@
   },
   "paths": {},
   "definitions": {
+    "io.argoproj.workflow.v1alpha1.ArchiveStrategy": {
+      "properties": {
+        "none": {
+          "$ref": "#/definitions/io.argoproj.workflow.v1alpha1.NoneStrategy"
+        },
+        "tar": {
+          "$ref": "#/definitions/io.argoproj.workflow.v1alpha1.TarStrategy"
+        }
+      }
+    },
     "io.argoproj.workflow.v1alpha1.Arguments": {
       "description": "Arguments to a template",
       "properties": {
@@ -31,6 +41,10 @@
         "name"
       ],
       "properties": {
+        "archive": {
+          "description": "Archive controls how the artifact will be saved to the artifact repository.",
+          "$ref": "#/definitions/io.argoproj.workflow.v1alpha1.ArchiveStrategy"
+        },
         "artifactory": {
           "description": "Artifactory contains artifactory artifact location details",
           "$ref": "#/definitions/io.argoproj.workflow.v1alpha1.ArtifactoryArtifact"
@@ -275,6 +289,7 @@
         }
       }
     },
+    "io.argoproj.workflow.v1alpha1.NoneStrategy": {},
     "io.argoproj.workflow.v1alpha1.Outputs": {
       "description": "Outputs hold parameters, artifacts, and results from a step",
       "properties": {
@@ -702,6 +717,7 @@
     "io.argoproj.workflow.v1alpha1.SuspendTemplate": {
       "description": "SuspendTemplate is a template subtype to suspend a workflow at a predetermined point in time"
     },
+    "io.argoproj.workflow.v1alpha1.TarStrategy": {},
     "io.argoproj.workflow.v1alpha1.Template": {
       "description": "Template is a reusable and composable unit of execution in a workflow",
       "required": [

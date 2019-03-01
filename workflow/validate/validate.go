@@ -215,7 +215,7 @@ func resolveAllVariables(scope map[string]interface{}, tmplStr string) error {
 				// NOTE: this is far from foolproof.
 			} else if strings.HasPrefix(tag, common.GlobalVarWorkflowCreationTimestamp) {
 			} else {
-				unresolvedErr = fmt.Errorf("failed to resolve {{%s}}", tag)
+				//unresolvedErr = fmt.Errorf("failed to resolve {{%s}}", tag)
 			}
 		}
 		return 0, nil

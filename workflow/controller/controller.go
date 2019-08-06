@@ -303,10 +303,15 @@ func (wfc *WorkflowController) processNextItem() bool {
 		wfc.throttler.Remove(key)
 		// Send all completed pods to gcPods channel to delete it later depend on the PodGCStrategy.
 		var doPodGC bool
-		if woc.wf.Spec.PodGCStrategy == wfv1.PodGCUponWorkflowCompleted {
-			doPodGC = true
-		} else if woc.wf.Spec.PodGCStrategy == wfv1.PodGCUponWorkflowSucceeded && woc.wf.Status.Successful() {
-			doPodGC = true
+		if woc.wf.Spec.PodGC != nil {
+			switch woc.wf.Spec.PodGC.Strategy {
+			case wfv1.PodGCOnWorkflowCompletion:
+				doPodGC = true
+			case wfv1.PodGCOnWorkflowSuccess:
+				if woc.wf.Status.Successful() {
+					doPodGC = true
+				}
+			}
 		}
 		if doPodGC {
 			for podName := range woc.completedPods {
